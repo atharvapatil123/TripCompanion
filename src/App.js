@@ -10,72 +10,80 @@ import AnonLogin from "./pages/AnonLogin/AnonLogin";
 import Profile from "./pages/Profile/Profile";
 
 const App = () => {
-	const router = createBrowserRouter([
-		{
-			path: "/",
-			element: (
-				<>
-					<Home />
-				</>
-			),
-		},
-		{
-			path: "/profile",
-			element: (
-				<>
-					<Profile />
-				</>
-			),
-		},
-		{
-			path: "/anonVerify",
-			element: (
-				<>
-					<AnonLogin />
-				</>
-			),
-		},
-		{
-			path: "/register",
-			element: (
-				<>
-					<Register />
-				</>
-			),
-		},
-		{
-			path: "/addEvent",
-			element: (
-				<>
-					<AddEvent />
-				</>
-			),
-		},
-		{
-			path: "/feed",
-			element: (
-				<>
-					<UserFeed />
-				</>
-			),
-		},
-		{
-			path: "/dashboard",
-			element: (
-				<>
-					<Dashboard />
-				</>
-			),
-		},
-		{
-			path: "/event/:id",
-			element: (
-				<>
-					<Event />
-				</>
-			),
-		}
-	]);
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <>
+          <Home />
+        </>
+      ),
+    },
+    {
+      path: "/account",
+      element: (
+        <>
+          <Profile />
+        </>
+      ),
+    },
+    {
+      path: "/register",
+      element: (
+        <>
+          <Register />
+        </>
+      ),
+    },
+    {
+      path: "/addEvent",
+      element: (
+        <>
+          <AddEvent />
+        </>
+      ),
+    },
+    {
+      path: "/feed",
+      element: (
+        <>
+          <UserFeed />
+        </>
+      ),
+    },
+    {
+      path: "/dashboard",
+      element: (
+        <>
+          <Dashboard />
+        </>
+      ),
+    },
+    {
+      path: "/event/:id",
+      element: (
+        <>
+          <Event />
+        </>
+      ),
+    },
+    {
+      path: "/account/:id",
+      element: (
+        <>
+          <Profile />
+        </>
+      ),
+    },
+    {
+      path: "/anonverify",
+      element: (
+        <>
+          <AnonLogin />
+        </>
+      ),
+    },
+  ]);
 
   return <RouterProvider router={router}></RouterProvider>;
 };
