@@ -11,6 +11,7 @@ contract TripCompanion {
         string bio;
         address walletAddress;
         uint256 requestStatus;
+        bool isVerified;
     }
 
     struct Event {
@@ -21,6 +22,31 @@ contract TripCompanion {
         address creator;
         address[] matches;
     }
+
+    event UserEvent (
+        bool registered,
+        string name,
+        string dob,
+        uint256 gender,
+        string bio,
+        address walletAddress,
+        uint256 requestStatus,
+        bool isVerified
+    );
+
+    event EventEvent (
+        uint256 eventId, 
+        string destination,
+        string date,
+        string name,
+        address creator
+    );
+
+    event InterestData(
+        address userAddress,
+        uint256 eventId,
+        uint256 status
+    );
 
     mapping(address => User) public users;
     User[] public allUserList;
@@ -34,19 +60,11 @@ contract TripCompanion {
     mapping(address => mapping(uint256 => uint256)) public interested;
     mapping(uint256 => address[]) public eventToUserMapping;
 
-    // Event emitted when a new event is created
-    event EventCreated(uint256 indexed eventId, string destination);
-
-    // Event emitted when a user shows interest in an event
-    event InterestShown(address indexed user, uint256 indexed eventId);
-
-    // Event emitted when a match is made
-    event MatchMade(address indexed user, uint256 indexed eventId);
-
     // Function to register a user
     function registerUser(string memory _name, string memory _dob, uint256 gender, string memory _bio) external {
         require(!users[msg.sender].registered, "User already registered");
-        users[msg.sender] = User(true, _name, _dob, gender, _bio, msg.sender,0);
+        users[msg.sender] = User(true, _name, _dob, gender, _bio, msg.sender, 0, false);
+        emit UserEvent(true, _name, _dob, gender, _bio, msg.sender, 0, false);
         allUserList.push(users[msg.sender]);
     }
 
@@ -67,9 +85,10 @@ contract TripCompanion {
     // Function to create an event
     function createEvent(string memory _destination, string memory _date, string memory _name) external {
         require(users[msg.sender].registered, "User not registered");
+        //require(users[msg.sender].isVerified, "User not verified");
         address[] memory matches;
         events.push(Event(eventIdCounter, _destination, _date, _name, msg.sender, matches));
-        emit EventCreated(eventIdCounter, _destination);
+        emit EventEvent(eventIdCounter, _destination, _date, _name, msg.sender);
         eventIdCounter++;
     }
 
@@ -77,22 +96,26 @@ contract TripCompanion {
     function showInterest(uint256 _eventId) external {
         require(_eventId < events.length, "Event does not exist");
         require(users[msg.sender].registered, "User not registered");
+        //require(users[msg.sender].isVerified, "User not verified");
         require(interested[msg.sender][_eventId] == 0, "Already interested");
         require(events[_eventId].creator != msg.sender, "Creator cannot join");
         
         interested[msg.sender][_eventId] = 1;
         // events[_eventId].matches.push(msg.sender);
-        emit InterestShown(msg.sender, _eventId);
+        emit InterestData(msg.sender, _eventId, 1);
+
     }
 
     function approveInterest(uint256 _eventId, address _user) external{
         require(_eventId < events.length, "Event does not exist");
         require(users[_user].registered, "User not registered");
+        //require(users[_user].isVerified, "User not verified");
         require(interested[_user][_eventId] == 1, "No interest is shown");
         require(msg.sender == events[_eventId].creator, "Only an event creator can approve");
         if (events[_eventId].creator != _user) {
             events[_eventId].matches.push(_user);
             interested[_user][_eventId] = 3;
+            emit InterestData(_user, _eventId, 3);
             //users[_user].requestStatus = 1;
         }
     }
@@ -100,10 +123,12 @@ contract TripCompanion {
     function rejectInterest(uint256 _eventId, address _user) external{
         require(_eventId < events.length, "Event does not exist");
         require(users[_user].registered, "User not registered");
+        //require(users[_user].isVerified, "User not verified");
         require(interested[_user][_eventId] == 1, "No interest is shown");
         require(msg.sender == events[_eventId].creator, "Only an event creator can reject");
         if (events[_eventId].creator != _user) {
             interested[_user][_eventId] = 2;
+            emit InterestData(_user, _eventId, 2);
         }
     }
 
