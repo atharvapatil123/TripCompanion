@@ -17,11 +17,11 @@ import Sidebar from "../Sidebar/Sidebar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState({});
   const [poaps, setPOAPs] = useState([]);
   const [requestedEvents, setRequestedEvents] = useState([]);
   const { checkIfWalletConnected, currentAccount } = useAuth();
-  const { fetchUser, fetchUserNFTs } = useTripCompanionContext();
+  const { fetchUserByAddress, fetchUserNFTs } = useTripCompanionContext();
 
   useEffect(() => {
     checkIfWalletConnected();
@@ -43,7 +43,7 @@ const Dashboard = () => {
     }else{
       account=currentAccount;
     }
-    const currUser = await fetchUser(account);
+    const currUser = await fetchUserByAddress(account);
       console.log("Fetching Current User...", currUser);
     setUser(currUser);
   };
@@ -70,7 +70,8 @@ const Dashboard = () => {
           <AppHeaderContainer>
             <AppLogo>Trip Companion</AppLogo>
           </AppHeaderContainer>
-          <EventCard>
+          {
+            user && user.name && <EventCard>
             <EventInfoGroup>
               <EventInfoLabel>Name</EventInfoLabel>
               <EventInfoValue>{user.name}</EventInfoValue>
@@ -85,13 +86,15 @@ const Dashboard = () => {
             </EventInfoGroup>
             <EventInfoGroup>
               <EventInfoLabel>Wallet Address</EventInfoLabel>
-              <EventInfoValue>{user.walletAddress}</EventInfoValue>
+              <EventInfoValue>{`${user.walletAddress.substring(0, 8)}...${user.walletAddress.substr(-7, 7)}`}</EventInfoValue>
             </EventInfoGroup>
             <EventInfoGroup>
               <EventInfoLabel>Is Verified?</EventInfoLabel>
               <EventInfoValue>{!user.isVerified ? "false" : "true"}</EventInfoValue>
             </EventInfoGroup>
           </EventCard>
+          }
+          
           <ListHeader>My NFTs:</ListHeader>
           {poaps.length > 0 ? poaps.map((poap) => (
             <EventCard>
@@ -126,6 +129,7 @@ const ListHeader = styled.div`
 `;
 
 const EventCard = styled.div`
+  width: 100%;
   margin: 1rem 0;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -149,7 +153,9 @@ const EventInfoLabel = styled.div`
   font-size: 0.9rem;
 `;
 
-const EventInfoValue = styled.div``;
+const EventInfoValue = styled.div`
+  word-wrap: break-word;
+`;
 
 const EventActions = styled.div`
   width: 100%;

@@ -12,7 +12,7 @@ const Home = () => {
 	const [bio, setBio] = useState("");
 
 	const { checkIfWalletConnected, currentAccount } = useAuth();
-	const {fetchUser} = useTripCompanionContext();
+	const {fetchUserByAddress} = useTripCompanionContext();
 
 	useEffect(() => {
 		checkIfWalletConnected();
@@ -22,10 +22,12 @@ const Home = () => {
 	}, [currentAccount]);
 
     const checkIfUserIsRegistered = async () => {
-        const user = await fetchUser(currentAccount);
+        const user = await fetchUserByAddress(currentAccount);
         console.log(user);
-        if(user){
+        if(user && user.isVerified){
             navigate("/feed");
+        }else if(user && !user.isVerified){
+            navigate("/anonverify");
         }
     }
 
@@ -37,8 +39,8 @@ const Home = () => {
         <HomeContainer>
             <HomeAppContainer>
                 <AppInfo>
-                    <AppLogo>Trip Companion</AppLogo>
-                    <AppSlogan>Connecting People!</AppSlogan>
+                    <AppLogo>Companion</AppLogo>
+                    <AppSlogan>Connecting People <br/>who love to travel!</AppSlogan>
                 </AppInfo>
                 <WalletConnectContainer>
                     <ConnectWallet onClick={handleNavigateToRegister}>Register</ConnectWallet>
@@ -79,14 +81,13 @@ const AppInfo = styled.div`
 
 const AppLogo = styled.div`
     color: white;
-    /* font-family: "Pacifico", cursive; */
-    font-size: 3rem;
+    font-family: "Pacifico", cursive;
+    font-size: 4rem;
     text-align: center;
 `;
 
 const AppSlogan = styled.div`
     color: white;
-    font-family: "Pacifico", cursive;
     font-size: 1.5rem;
     text-align: center;
 `;

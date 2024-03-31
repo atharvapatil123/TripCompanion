@@ -21,7 +21,7 @@ const UserFeed = () => {
     const navigate = useNavigate();
 	const [eventsList, setEventsList] = useState([]);
 	const { checkIfWalletConnected, currentAccount } = useAuth();
-	const {fetchAllEvents, joinEvent, fetchUser, fetchMyRequests} = useTripCompanionContext();
+	const {fetchAllEvents, joinEvent, fetchUserByAddress, fetchMyRequests} = useTripCompanionContext();
     const [isJoinEventLoading, setIsJoinEventLoading] = useState(false);
     const [isJoinEventId, setIsJoinEventId] = useState();
     const [interestShownEvents, setInterestShownEvents] = useState([]);
@@ -37,7 +37,7 @@ const UserFeed = () => {
 	}, [currentAccount]);
 
     const checkIfUserIsRegistered = async () => {
-        const user = await fetchUser(currentAccount);
+        const user = await fetchUserByAddress(currentAccount);
         console.log(user);
         if(user){
             navigate("/feed");
@@ -140,7 +140,7 @@ const UserFeed = () => {
                                     </EventInfoGroup>
                                     <EventInfoGroup>
                                         <EventInfoLabel>Initiated by</EventInfoLabel>
-                                        <EventInfoValue>{event.creator}</EventInfoValue>
+                                        <EventInfoValue>{`${event.creator.substring(0, 8)}...${event.creator.substr(-7, 7)}`}</EventInfoValue>
                                     </EventInfoGroup>
                                     <EventActions>
                                         {renderJoinButton(event.eventId, event.creator)}
