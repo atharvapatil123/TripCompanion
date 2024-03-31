@@ -1,7 +1,7 @@
 import TripCompanion from "../artifacts/contracts/TripCompanion.sol/TripCompanion.json";
 
 export const TripCompanionAddress =
-  "0xCF5a81C26Fd5cE793A947f8fC7127675c31698E7";
+  "0x73dccbc4Ec913Dc1DaE1acD01D08b1Faa82f867E";
 export const TripCompanionABI = TripCompanion.abi;
 
 export const ChainId = {

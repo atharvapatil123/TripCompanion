@@ -16,7 +16,9 @@ contract TripCompanion is ERC721URIStorage {
         address walletAddress;
         uint256 requestStatus;
         bool isVerified;
-        // string profilePic;
+        uint256 gender;
+        bool ageFlag;
+        string profilePic;
     }
 
     struct Event {
@@ -34,7 +36,10 @@ contract TripCompanion is ERC721URIStorage {
         string bio,
         address walletAddress,
         uint256 requestStatus,
-        bool isVerified
+        bool isVerified,
+        uint256 gender,
+        bool ageFlag,
+        string profilePic
     );
 
     struct Poap {
@@ -68,8 +73,10 @@ contract TripCompanion is ERC721URIStorage {
     User[] public allUserList;
     Event[] public events;
     uint256 public eventIdCounter = 0;
+    uint256 hashCount;
 
     mapping(uint256 => Poap) private poapMapping;
+    mapping(uint256 => string) private hashMapping;
 
     // 0 = not sent
     // 1 = shown interest
@@ -81,10 +88,31 @@ contract TripCompanion is ERC721URIStorage {
 
     constructor() ERC721("TripCompanion", "TPC") {}
 
+    function compareStrings(
+        string memory a,
+        string memory b
+    ) public view returns (bool) {
+        return (keccak256(abi.encodePacked((a))) ==
+            keccak256(abi.encodePacked((b))));
+    }
+
+    function checkHashExists(string memory curHash) public view returns (bool) {
+        for (uint256 i = 0; i < hashCount; i++) {
+            if (
+                keccak256(abi.encodePacked((curHash))) ==
+                keccak256(abi.encodePacked((hashMapping[i])))
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Function to register a user
     function registerUser(
         string memory _name,
-        string memory _bio
+        string memory _bio,
+        string memory _profilePic
     ) external {
         require(!users[msg.sender].registered, "User already registered");
         users[msg.sender] = User(
@@ -93,10 +121,61 @@ contract TripCompanion is ERC721URIStorage {
             _bio,
             msg.sender,
             0,
-            false
+            false,
+            1,
+            false,
+            _profilePic
         );
-        emit UserEvent(true, _name, _bio, msg.sender, 0, false);
+        emit UserEvent(
+            true,
+            _name,
+            _bio,
+            msg.sender,
+            0,
+            false,
+            1,
+            false,
+            _profilePic
+        );
         allUserList.push(users[msg.sender]);
+    }
+
+    function verifyUser(string memory curHash, uint256 gender, bool ageFlag) public {
+        // require(!checkHashExists(curHash), "Hash already exists!");
+
+        users[msg.sender].gender = gender;
+        users[msg.sender].ageFlag = ageFlag;
+        users[msg.sender].isVerified = true;
+
+        emit UserEvent(
+            users[msg.sender].registered,
+            users[msg.sender].name,
+            users[msg.sender].bio,
+            users[msg.sender].walletAddress,
+            users[msg.sender].requestStatus,
+            true,
+            gender,
+            ageFlag,
+            users[msg.sender].profilePic
+        );
+
+        hashMapping[hashCount++] = curHash;
+    }
+
+    function updateProfilePic(string memory profilePic) public {
+        users[msg.sender].profilePic = profilePic;
+
+        emit UserEvent(
+            users[msg.sender].registered,
+            users[msg.sender].name,
+            users[msg.sender].bio,
+            users[msg.sender].walletAddress,
+            users[msg.sender].requestStatus,
+            users[msg.sender].isVerified,
+            users[msg.sender].gender,
+            users[msg.sender].ageFlag,
+            users[msg.sender].profilePic
+        );
     }
 
     function isUserRegistered() external view returns (bool) {
@@ -122,7 +201,7 @@ contract TripCompanion is ERC721URIStorage {
         string memory _name
     ) external {
         require(users[msg.sender].registered, "User not registered");
-        //require(users[msg.sender].isVerified, "User not verified");
+        require(users[msg.sender].isVerified, "User not verified");
         events.push(
             Event(eventIdCounter, _destination, _date, _name, msg.sender, false)
         );
@@ -141,7 +220,7 @@ contract TripCompanion is ERC721URIStorage {
     function showInterest(uint256 _eventId) external {
         require(_eventId < events.length, "Event does not exist");
         require(users[msg.sender].registered, "User not registered");
-        //require(users[msg.sender].isVerified, "User not verified");
+        require(users[msg.sender].isVerified, "User not verified");
         require(interested[msg.sender][_eventId] == 0, "Already interested");
         require(events[_eventId].creator != msg.sender, "Creator cannot join");
 
@@ -152,7 +231,7 @@ contract TripCompanion is ERC721URIStorage {
     function approveInterest(uint256 _eventId, address _user) external {
         require(_eventId < events.length, "Event does not exist");
         require(users[_user].registered, "User not registered");
-        //require(users[_user].isVerified, "User not verified");
+        require(users[_user].isVerified, "User not verified");
         require(interested[_user][_eventId] == 1, "No interest is shown");
         require(
             msg.sender == events[_eventId].creator,
@@ -167,7 +246,7 @@ contract TripCompanion is ERC721URIStorage {
     function rejectInterest(uint256 _eventId, address _user) external {
         require(_eventId < events.length, "Event does not exist");
         require(users[_user].registered, "User not registered");
-        //require(users[_user].isVerified, "User not verified");
+        require(users[_user].isVerified, "User not verified");
         require(interested[_user][_eventId] == 1, "No interest is shown");
         require(
             msg.sender == events[_eventId].creator,

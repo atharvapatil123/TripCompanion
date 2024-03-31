@@ -12,7 +12,7 @@ export const TripCompanionContext = React.createContext();
 
 export const useTripCompanionContext = () => useContext(TripCompanionContext);
 const APIURL =
-  "https://api.studio.thegraph.com/query/69527/trip_companion/v0.0.9";
+  "https://api.studio.thegraph.com/query/69527/trip_companion/v0.0.11";
 
 export const TripCompanionProvider = ({ children }) => {
   const { currentAccount } = useAuth();
@@ -47,13 +47,14 @@ export const TripCompanionProvider = ({ children }) => {
     if (currentAccount) {
       console.log(currentAccount);
       const transaction = await contract.verifyUser(hash,gender,ageAbove18);
+      
       const receipt = await transaction.wait();
       return receipt;
     }
     return "No account";
   };
 
-  const fetchUser = async (userAddress) => {
+  const fetchUserByAddress = async (userAddress) => {
     console.log(userAddress);
     const query = `query MyQuery {
 		userEvents(
@@ -72,6 +73,7 @@ export const TripCompanionProvider = ({ children }) => {
 		  transactionHash
 		  registered
 		  walletAddress
+      gender
 		}
 	  }`;
 
@@ -330,7 +332,7 @@ export const TripCompanionProvider = ({ children }) => {
       let result = [];
 
       for (let i = 0; i < newEventList.length; i++) {
-        const userData = await fetchUser(newEventList[i].userAddress);
+        const userData = await fetchUserByAddress(newEventList[i].userAddress);
         result.push({
           status: newEventList[i].status,
           ...userData,
@@ -400,7 +402,7 @@ export const TripCompanionProvider = ({ children }) => {
         fetchEventRequests,
         acceptUser,
         rejectUser,
-        fetchUser,
+        fetchUserByAddress,
         verifyUser,
         giveNFTsToApprovedUsers,
         fetchUserNFTs,
